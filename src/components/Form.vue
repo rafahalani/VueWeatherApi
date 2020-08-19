@@ -2,25 +2,27 @@
   <div>
     <b-container class="mt-5" >
       <b-card border-variant="info" bg-variant="light" > 
-    <b-form @submit="onSubmit" @reset="onReset" >
-      <b-form-group label=" Name:">
-        <b-form-input
-          v-model="form.name"
-          required
-          placeholder="Enter city name"
-        ></b-form-input>
-      </b-form-group>
-     
-
-
-    <b-form-group>
+     <div class="search-box">
+        <input 
+          type="text" 
+          class="search-bar" 
+          placeholder="Search..."
+          v-model="query"
+          @keypress="fetchWeather"
+        />
+      </div>
       
-      <b-button class="mr-2"  size="lg" type="submit" variant="info"> Submit</b-button>
-      
-      <b-button  size="lg" type="reset" variant="danger"> Reset </b-button>
-    </b-form-group>
+      <div class="weather-wrap" v-if="typeof weather.main != 'undefined'">
+        <div class="location-box">
+          <div class="location">{{ weather.name }}, {{ weather.sys.country }}</div>
+            <div class="date">{{ dateBuilder() }}</div>
+        </div>
+        <div class="weather-box">
+          <div class="temp">{{ Math.round(weather.main.temp) }} °c</div>
+          <div class="weather">{{ weather.weather[0].main }}</div>
+        </div>
+      </div>
     
-    </b-form>
   </b-card>
     </b-container>
   </div>
@@ -31,36 +33,37 @@ export default {
   name: "Form",
   data() {
     return {
-      form: {
-        name: "",
+        api_key: "355cc4da18d629fd95a0fa828a8b382a",
+       url_base: "https://api.openweathermap.org/data/2.5/",
+     query:"",
+     weather: {}
+    }
       },
-      show: true,
-    };
-  },
-  methods: {
-    onSubmit() {
- /*      var view = new Zaza.View("007583f22bab17ff8231fa3db23322b3")
-      var zazaevent = JSON.stringify(this.form)
-      view.upload(zazaevent,"barapp.json")
-
-
-.then(response =>{
-  console.log(response)
-})
-
-.catch(error =>{
-  console.log(error)
-}) */
+  methods: { 
+       fetchWeather (e) {
+        if (e.key == "Enter") {
+          fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
+            .then(res => {
+              return res.json();
+            }).then(this.setResults);
+      }
+  
     },
-    onReset(evt) {
-      evt.preventDefault();
-      // Reset our form values
-      this.form.name = "";
-
-
-      // Trick to reset/clear native browser form validation state
-     
+    
+setResults (results) {
+      this.weather = results;
     },
+    dateBuilder () {
+      let d = new Date();
+      let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      let day = days[d.getDay()];
+      let date = d.getDate();
+      let month = months[d.getMonth()];
+      let year = d.getFullYear();
+      return `${day} ${date} ${month} ${year}`;
+    }
+
   },
 };
 </script>
